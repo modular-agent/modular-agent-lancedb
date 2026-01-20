@@ -1,13 +1,13 @@
 [package]
-name = "askit-lancedb-agents"
-version = "0.1.0"
-description = "LanceDB Agents for Agent Stream Kit"
+name = "mak-lancedb-agents"
+version = "0.2.0"
+description = "LanceDB Agents for Modular Agent Kit"
 authors = ["Akira Ishino <akira@lumilab.jp>"]
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 
 [dependencies]
-agent-stream-kit = "0.19.0"
+modular-agent-kit = "0.20.0"
 arrow-array = "56.2"
 arrow-json = "56.2"
 arrow-schema = { version = "56.2", features = ["serde"] }
@@ -18,5 +18,5 @@ lancedb = "0.23.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-[patch.crates-io]
-agent-stream-kit = { path = "../agent-stream-kit/agent-stream-kit" }
+# [patch.crates-io]
+# modular-agent-kit = { path = "../modular-agent-kit/modular-agent-kit" }

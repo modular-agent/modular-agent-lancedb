@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use agent_stream_kit::{
-    ASKit, Agent, AgentContext, AgentData, AgentError, AgentOutput, AgentSpec, AgentValue, AsAgent,
-    askit_agent, async_trait,
+use modular_agent_kit::{
+    MAK, Agent, AgentContext, AgentData, AgentError, AgentOutput, AgentSpec, AgentValue, AsAgent,
+    mak_agent, async_trait,
 };
 use arrow_array::RecordBatchIterator;
 use arrow_schema::Schema;
@@ -18,20 +18,20 @@ use crate::db::{
 
 static CATEGORY: &str = "DB/LanceDB";
 
-static PIN_VALUE: &str = "value";
-static PIN_TABLE: &str = "table";
-static PIN_UNIT: &str = "unit";
+static PORT_VALUE: &str = "value";
+static PORT_TABLE: &str = "table";
+static PORT_UNIT: &str = "unit";
 
 static CONFIG_DB: &str = "db";
 static CONFIG_COLUMN: &str = "column";
 static CONFIG_SCHEMA: &str = "schema";
 static CONFIG_TABLE: &str = "table";
 
-#[askit_agent(
+#[mak_agent(
     title = "Create Table",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_UNIT],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_UNIT],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
     object_config(name = CONFIG_SCHEMA),
@@ -43,16 +43,16 @@ struct LanceDbCreateTableAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbCreateTableAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -116,15 +116,15 @@ impl AsAgent for LanceDbCreateTableAgent {
             .await
             .map_err(|e| AgentError::IoError(format!("LanceDB Create Table Error: {}", e)))?;
 
-        self.output(ctx, PIN_UNIT, AgentValue::unit()).await
+        self.output(ctx, PORT_UNIT, AgentValue::unit()).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Create Index",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_UNIT],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_UNIT],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
     string_config(name = CONFIG_COLUMN),
@@ -135,16 +135,16 @@ struct LanceDbCreateIndexAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbCreateIndexAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -222,15 +222,15 @@ impl AsAgent for LanceDbCreateIndexAgent {
             .await
             .map_err(|e| AgentError::IoError(format!("LanceDB Create Index Error: {}", e)))?;
 
-        self.output(ctx, PIN_UNIT, AgentValue::unit()).await
+        self.output(ctx, PORT_UNIT, AgentValue::unit()).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Drop Table",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_UNIT],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_UNIT],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
 )]
@@ -240,16 +240,16 @@ struct LanceDbDropTableAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbDropTableAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -287,15 +287,15 @@ impl AsAgent for LanceDbDropTableAgent {
             .await
             .map_err(|e| AgentError::IoError(format!("LanceDB Drop Table Error: {}", e)))?;
 
-        self.output(ctx, PIN_UNIT, AgentValue::unit()).await
+        self.output(ctx, PORT_UNIT, AgentValue::unit()).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Add Records",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_UNIT],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_UNIT],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
 )]
@@ -305,16 +305,16 @@ struct LanceDbAddRecordsAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbAddRecordsAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -366,15 +366,15 @@ impl AsAgent for LanceDbAddRecordsAgent {
             .await
             .map_err(|e| AgentError::IoError(format!("LanceDB Add Records Error: {}", e)))?;
 
-        self.output(ctx, PIN_UNIT, AgentValue::unit()).await
+        self.output(ctx, PORT_UNIT, AgentValue::unit()).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Optimize",
     category = CATEGORY,
-    inputs = [PIN_UNIT],
-    outputs = [PIN_VALUE],
+    inputs = [PORT_UNIT],
+    outputs = [PORT_VALUE],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
 )]
@@ -384,16 +384,16 @@ struct LanceDbOptimizeAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbOptimizeAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         _value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -428,15 +428,15 @@ impl AsAgent for LanceDbOptimizeAgent {
             "compaction".to_string() => AgentValue::string(format!("{:?}", stats.compaction)),
             "prune".to_string() => AgentValue::string(format!("{:?}", stats.prune)),
         });
-        self.output(ctx, PIN_VALUE, output).await
+        self.output(ctx, PORT_VALUE, output).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Query",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_TABLE],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_TABLE],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
 )]
@@ -446,16 +446,16 @@ struct LanceDbQueryAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbQueryAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -527,15 +527,15 @@ impl AsAgent for LanceDbQueryAgent {
 
         let value = record_batches_to_agent_value(result)?;
 
-        self.output(ctx, PIN_TABLE, value).await
+        self.output(ctx, PORT_TABLE, value).await
     }
 }
 
-#[askit_agent(
+#[mak_agent(
     title = "Vector Search",
     category = CATEGORY,
-    inputs = [PIN_VALUE],
-    outputs = [PIN_TABLE],
+    inputs = [PORT_VALUE],
+    outputs = [PORT_TABLE],
     string_config(name = CONFIG_DB),
     string_config(name = CONFIG_TABLE),
 )]
@@ -545,16 +545,16 @@ struct LanceDbVectorSearchAgent {
 
 #[async_trait]
 impl AsAgent for LanceDbVectorSearchAgent {
-    fn new(askit: ASKit, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
+    fn new(mak: MAK, id: String, spec: AgentSpec) -> Result<Self, AgentError> {
         Ok(Self {
-            data: AgentData::new(askit, id, spec),
+            data: AgentData::new(mak, id, spec),
         })
     }
 
     async fn process(
         &mut self,
         ctx: AgentContext,
-        _pin: String,
+        _port: String,
         value: AgentValue,
     ) -> Result<(), AgentError> {
         let config = self.configs()?;
@@ -606,6 +606,6 @@ impl AsAgent for LanceDbVectorSearchAgent {
         }
 
         let value = record_batches_to_agent_value(batches)?;
-        self.output(ctx, PIN_TABLE, value).await
+        self.output(ctx, PORT_TABLE, value).await
     }
 }

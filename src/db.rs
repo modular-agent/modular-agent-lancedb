@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::ops::Not;
 use std::sync::{Arc, Mutex, OnceLock};
 
-use agent_stream_kit::{AgentError, AgentValue};
+use modular_agent_kit::{AgentError, AgentValue};
 use arrow_array::builder::{FixedSizeListBuilder, Float16Builder, Float32Builder, Float64Builder};
 use arrow_array::{
     Array, ArrayRef, BooleanArray, FixedSizeListArray, Float16Array, Float32Array, Float64Array,

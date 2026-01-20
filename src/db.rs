@@ -603,413 +603,430 @@ fn agent_array_to_arrow_array(
     }
 }
 
-pub fn record_batch_to_agent_value(batch: &RecordBatch) -> Result<AgentValue, AgentError> {
-    let num_rows = batch.num_rows();
-    let mut records = (0..num_rows)
-        .map(|_| im::HashMap::new())
-        .collect::<Vec<_>>();
-    for (col_index, field) in batch.schema().fields().iter().enumerate() {
-        let column = batch.column(col_index);
-        match field.data_type() {
-            DataType::Null => {
-                let null_array = column.as_any().downcast_ref::<NullArray>().ok_or_else(|| {
-                    AgentError::InvalidValue(format!(
-                        "Failed to downcast column '{}' to NullArray",
-                        field.name()
-                    ))
-                })?;
-                for row_index in 0..null_array.len() {
-                    records[row_index].insert(field.name().clone(), AgentValue::Unit);
-                }
-            }
-            DataType::Boolean => {
-                let boolean_array =
-                    column
-                        .as_any()
-                        .downcast_ref::<BooleanArray>()
-                        .ok_or_else(|| {
+pub fn record_batches_to_agent_value(batches: Vec<RecordBatch>) -> Result<AgentValue, AgentError> {
+    let mut total_records = Vec::new();
+    for batch in &batches {
+        let num_rows = batch.num_rows();
+        let mut records = (0..num_rows)
+            .map(|_| im::HashMap::new())
+            .collect::<Vec<_>>();
+        for (col_index, field) in batch.schema().fields().iter().enumerate() {
+            let column = batch.column(col_index);
+            match field.data_type() {
+                DataType::Null => {
+                    let null_array =
+                        column.as_any().downcast_ref::<NullArray>().ok_or_else(|| {
                             AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to BooleanArray",
+                                "Failed to downcast column '{}' to NullArray",
                                 field.name()
                             ))
                         })?;
-                for (row_index, a) in boolean_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::boolean(a.unwrap())
-                    };
-                    records[row_index].insert(field.name().clone(), v);
+                    for row_index in 0..null_array.len() {
+                        records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                    }
                 }
-            }
-            DataType::Int8 => {
-                let int_array = column.as_any().downcast_ref::<Int8Array>().ok_or_else(|| {
-                    AgentError::InvalidValue(format!(
-                        "Failed to downcast column '{}' to Int8Array",
-                        field.name()
-                    ))
-                })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Int16 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<Int16Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to Int16Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Int32 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to Int32Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Int64 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<Int64Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to Int64Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap())
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::UInt8 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<UInt8Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to UInt8Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::UInt16 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<UInt16Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to UInt16Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::UInt32 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<UInt32Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to UInt32Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::UInt64 => {
-                let int_array = column
-                    .as_any()
-                    .downcast_ref::<UInt64Array>()
-                    .ok_or_else(|| {
-                        AgentError::InvalidValue(format!(
-                            "Failed to downcast column '{}' to UInt64Array",
-                            field.name()
-                        ))
-                    })?;
-                for (row_index, a) in int_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::integer(a.unwrap() as i64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Float16 => {
-                let float_array =
-                    column
-                        .as_any()
-                        .downcast_ref::<Float16Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to Float16Array",
-                                field.name()
-                            ))
-                        })?;
-                for (row_index, a) in float_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::number(f16::to_f64(a.unwrap()))
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Float32 => {
-                let float_array =
-                    column
-                        .as_any()
-                        .downcast_ref::<Float32Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to Float32Array",
-                                field.name()
-                            ))
-                        })?;
-                for (row_index, a) in float_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::number(a.unwrap() as f64)
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Float64 => {
-                let float_array =
-                    column
-                        .as_any()
-                        .downcast_ref::<Float64Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to Float64Array",
-                                field.name()
-                            ))
-                        })?;
-                for (row_index, a) in float_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::number(a.unwrap())
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::Utf8 => {
-                let string_array =
-                    column
-                        .as_any()
-                        .downcast_ref::<StringArray>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to StringArray",
-                                field.name()
-                            ))
-                        })?;
-                // for (row_index, obj) in records.iter_mut().enumerate() {
-                for (row_index, a) in string_array.iter().enumerate() {
-                    let v = if a.is_none() {
-                        AgentValue::Unit
-                    } else {
-                        AgentValue::string(a.unwrap())
-                    };
-                    records[row_index].insert(field.name().clone(), v);
-                }
-            }
-            DataType::FixedSizeList(field_ref, size) => match field_ref.data_type() {
-                DataType::Float16 => {
-                    let list_array = column
-                        .as_any()
-                        .downcast_ref::<FixedSizeListArray>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to FixedSizeListArray",
-                                field.name()
-                            ))
-                        })?;
-                    let values_array = list_array.values();
-                    let float_array = values_array
-                        .as_any()
-                        .downcast_ref::<Float16Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast values of column '{}' to Float16Array",
-                                field.name()
-                            ))
-                        })?;
-                    for row_index in 0..list_array.len() {
-                        if list_array.is_null(row_index) {
-                            records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                DataType::Boolean => {
+                    let boolean_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<BooleanArray>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to BooleanArray",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in boolean_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
                         } else {
-                            let start = row_index * (*size as usize);
-                            let end = start + (*size as usize);
-                            let mut arr = Vec::new();
-                            for i in start..end {
-                                if float_array.is_null(i) {
-                                    arr.push(AgentValue::Unit);
-                                } else {
-                                    arr.push(AgentValue::number(f16::to_f64(float_array.value(i))));
-                                }
-                            }
-                            records[row_index]
-                                .insert(field.name().clone(), AgentValue::array(arr.into()));
-                        }
+                            AgentValue::boolean(a.unwrap())
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::Int8 => {
+                    let int_array =
+                        column.as_any().downcast_ref::<Int8Array>().ok_or_else(|| {
+                            AgentError::InvalidValue(format!(
+                                "Failed to downcast column '{}' to Int8Array",
+                                field.name()
+                            ))
+                        })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::Int16 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Int16Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Int16Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::Int32 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Int32Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::Int64 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Int64Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Int64Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap())
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::UInt8 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<UInt8Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to UInt8Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::UInt16 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<UInt16Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to UInt16Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::UInt32 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<UInt32Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to UInt32Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::UInt64 => {
+                    let int_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<UInt64Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to UInt64Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in int_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::integer(a.unwrap() as i64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::Float16 => {
+                    let float_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Float16Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Float16Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in float_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::number(f16::to_f64(a.unwrap()))
+                        };
+                        records[row_index].insert(field.name().clone(), v);
                     }
                 }
                 DataType::Float32 => {
-                    let list_array = column
-                        .as_any()
-                        .downcast_ref::<FixedSizeListArray>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to FixedSizeListArray",
-                                field.name()
-                            ))
-                        })?;
-                    let values_array = list_array.values();
-                    let float_array = values_array
-                        .as_any()
-                        .downcast_ref::<Float32Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast values of column '{}' to Float32Array",
-                                field.name()
-                            ))
-                        })?;
-                    for row_index in 0..list_array.len() {
-                        if list_array.is_null(row_index) {
-                            records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                    let float_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Float32Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Float32Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in float_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
                         } else {
-                            let start = row_index * (*size as usize);
-                            let end = start + (*size as usize);
-                            let mut arr = Vec::new();
-                            for i in start..end {
-                                if float_array.is_null(i) {
-                                    arr.push(0.);
-                                } else {
-                                    arr.push(float_array.value(i));
-                                }
-                            }
-                            records[row_index]
-                                .insert(field.name().clone(), AgentValue::tensor(arr)); // Using tensor for Float32 arrays
-                        }
+                            AgentValue::number(a.unwrap() as f64)
+                        };
+                        records[row_index].insert(field.name().clone(), v);
                     }
                 }
                 DataType::Float64 => {
-                    let list_array = column
-                        .as_any()
-                        .downcast_ref::<FixedSizeListArray>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast column '{}' to FixedSizeListArray",
-                                field.name()
-                            ))
-                        })?;
-                    let values_array = list_array.values();
-                    let float_array = values_array
-                        .as_any()
-                        .downcast_ref::<Float64Array>()
-                        .ok_or_else(|| {
-                            AgentError::InvalidValue(format!(
-                                "Failed to downcast values of column '{}' to Float64Array",
-                                field.name()
-                            ))
-                        })?;
-                    for row_index in 0..list_array.len() {
-                        if list_array.is_null(row_index) {
-                            records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                    let float_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<Float64Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to Float64Array",
+                                    field.name()
+                                ))
+                            })?;
+                    for (row_index, a) in float_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
                         } else {
-                            let start = row_index * (*size as usize);
-                            let end = start + (*size as usize);
-                            let mut arr = Vec::new();
-                            for i in start..end {
-                                if float_array.is_null(i) {
-                                    arr.push(AgentValue::Unit);
-                                } else {
-                                    arr.push(AgentValue::number(float_array.value(i)));
-                                }
-                            }
-                            records[row_index]
-                                .insert(field.name().clone(), AgentValue::array(arr.into()));
-                        }
+                            AgentValue::number(a.unwrap())
+                        };
+                        records[row_index].insert(field.name().clone(), v);
                     }
                 }
+                DataType::Utf8 => {
+                    let string_array =
+                        column
+                            .as_any()
+                            .downcast_ref::<StringArray>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to StringArray",
+                                    field.name()
+                                ))
+                            })?;
+                    // for (row_index, obj) in records.iter_mut().enumerate() {
+                    for (row_index, a) in string_array.iter().enumerate() {
+                        let v = if a.is_none() {
+                            AgentValue::Unit
+                        } else {
+                            AgentValue::string(a.unwrap())
+                        };
+                        records[row_index].insert(field.name().clone(), v);
+                    }
+                }
+                DataType::FixedSizeList(field_ref, size) => match field_ref.data_type() {
+                    DataType::Float16 => {
+                        let list_array = column
+                            .as_any()
+                            .downcast_ref::<FixedSizeListArray>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to FixedSizeListArray",
+                                    field.name()
+                                ))
+                            })?;
+                        let values_array = list_array.values();
+                        let float_array = values_array
+                            .as_any()
+                            .downcast_ref::<Float16Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast values of column '{}' to Float16Array",
+                                    field.name()
+                                ))
+                            })?;
+                        for row_index in 0..list_array.len() {
+                            if list_array.is_null(row_index) {
+                                records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                            } else {
+                                let start = row_index * (*size as usize);
+                                let end = start + (*size as usize);
+                                let mut arr = Vec::new();
+                                for i in start..end {
+                                    if float_array.is_null(i) {
+                                        arr.push(AgentValue::Unit);
+                                    } else {
+                                        arr.push(AgentValue::number(f16::to_f64(
+                                            float_array.value(i),
+                                        )));
+                                    }
+                                }
+                                records[row_index]
+                                    .insert(field.name().clone(), AgentValue::array(arr.into()));
+                            }
+                        }
+                    }
+                    DataType::Float32 => {
+                        let list_array = column
+                            .as_any()
+                            .downcast_ref::<FixedSizeListArray>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to FixedSizeListArray",
+                                    field.name()
+                                ))
+                            })?;
+                        let values_array = list_array.values();
+                        let float_array = values_array
+                            .as_any()
+                            .downcast_ref::<Float32Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast values of column '{}' to Float32Array",
+                                    field.name()
+                                ))
+                            })?;
+                        for row_index in 0..list_array.len() {
+                            if list_array.is_null(row_index) {
+                                records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                            } else {
+                                let start = row_index * (*size as usize);
+                                let end = start + (*size as usize);
+                                let mut arr = Vec::new();
+                                for i in start..end {
+                                    if float_array.is_null(i) {
+                                        arr.push(0.);
+                                    } else {
+                                        arr.push(float_array.value(i));
+                                    }
+                                }
+                                records[row_index]
+                                    .insert(field.name().clone(), AgentValue::tensor(arr)); // Using tensor for Float32 arrays
+                            }
+                        }
+                    }
+                    DataType::Float64 => {
+                        let list_array = column
+                            .as_any()
+                            .downcast_ref::<FixedSizeListArray>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast column '{}' to FixedSizeListArray",
+                                    field.name()
+                                ))
+                            })?;
+                        let values_array = list_array.values();
+                        let float_array = values_array
+                            .as_any()
+                            .downcast_ref::<Float64Array>()
+                            .ok_or_else(|| {
+                                AgentError::InvalidValue(format!(
+                                    "Failed to downcast values of column '{}' to Float64Array",
+                                    field.name()
+                                ))
+                            })?;
+                        for row_index in 0..list_array.len() {
+                            if list_array.is_null(row_index) {
+                                records[row_index].insert(field.name().clone(), AgentValue::Unit);
+                            } else {
+                                let start = row_index * (*size as usize);
+                                let end = start + (*size as usize);
+                                let mut arr = Vec::new();
+                                for i in start..end {
+                                    if float_array.is_null(i) {
+                                        arr.push(AgentValue::Unit);
+                                    } else {
+                                        arr.push(AgentValue::number(float_array.value(i)));
+                                    }
+                                }
+                                records[row_index]
+                                    .insert(field.name().clone(), AgentValue::array(arr.into()));
+                            }
+                        }
+                    }
+                    _ => {
+                        return Err(AgentError::InvalidValue(format!(
+                            "Unsupported data type for FixedSizeList field '{}'",
+                            field.name()
+                        )));
+                    }
+                },
                 _ => {
                     return Err(AgentError::InvalidValue(format!(
-                        "Unsupported data type for FixedSizeList field '{}'",
+                        "Unsupported data type for field '{}'",
                         field.name()
                     )));
                 }
-            },
-            _ => {
-                return Err(AgentError::InvalidValue(format!(
-                    "Unsupported data type for field '{}'",
-                    field.name()
-                )));
-            }
-        };
+            };
+        }
+        total_records.extend(records);
     }
-    let records = records
-        .into_iter()
-        .map(|obj| AgentValue::object(obj))
-        .collect::<Vec<_>>();
-    Ok(AgentValue::array(records.into()))
+    Ok(AgentValue::array(
+        total_records
+            .into_iter()
+            .map(|obj| AgentValue::object(obj))
+            .collect::<Vec<_>>()
+            .into(),
+    ))
 }
 
 static DB_MAP: OnceLock<Mutex<BTreeMap<String, Connection>>> = OnceLock::new();

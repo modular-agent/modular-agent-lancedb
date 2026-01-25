@@ -2,7 +2,6 @@ use std::collections::{BTreeMap, HashMap};
 use std::ops::Not;
 use std::sync::{Arc, Mutex, OnceLock};
 
-use modular_agent_kit::{AgentError, AgentValue};
 use arrow_array::builder::{FixedSizeListBuilder, Float16Builder, Float32Builder, Float64Builder};
 use arrow_array::{
     Array, ArrayRef, BooleanArray, FixedSizeListArray, Float16Array, Float32Array, Float64Array,
@@ -13,6 +12,7 @@ use arrow_schema::{DataType, Field, IntervalUnit, Schema, TimeUnit, UnionFields,
 use half::f16;
 use im::vector;
 use lancedb::{Connection, connect};
+use modular_agent_kit::{AgentError, AgentValue};
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct DbSchema {

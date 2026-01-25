@@ -1,9 +1,5 @@
 use std::sync::Arc;
 
-use modular_agent_kit::{
-    MAK, Agent, AgentContext, AgentData, AgentError, AgentOutput, AgentSpec, AgentValue, AsAgent,
-    mak_agent, async_trait,
-};
 use arrow_array::RecordBatchIterator;
 use arrow_schema::Schema;
 use futures_util::TryStreamExt;
@@ -11,6 +7,10 @@ use im::hashmap;
 use lancedb::database::CreateTableMode;
 use lancedb::index::Index;
 use lancedb::query::{ExecutableQuery, QueryBase, Select};
+use modular_agent_kit::{
+    Agent, AgentContext, AgentData, AgentError, AgentOutput, AgentSpec, AgentValue, AsAgent, MAK,
+    async_trait, modular_agent,
+};
 
 use crate::db::{
     DbSchema, agent_value_to_record_batch, get_db_connection, record_batches_to_agent_value,
@@ -27,7 +27,7 @@ static CONFIG_COLUMN: &str = "column";
 static CONFIG_SCHEMA: &str = "schema";
 static CONFIG_TABLE: &str = "table";
 
-#[mak_agent(
+#[modular_agent(
     title = "Create Table",
     category = CATEGORY,
     inputs = [PORT_VALUE],
@@ -120,7 +120,7 @@ impl AsAgent for LanceDbCreateTableAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Create Index",
     category = CATEGORY,
     inputs = [PORT_VALUE],
@@ -226,7 +226,7 @@ impl AsAgent for LanceDbCreateIndexAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Drop Table",
     category = CATEGORY,
     inputs = [PORT_VALUE],
@@ -291,7 +291,7 @@ impl AsAgent for LanceDbDropTableAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Add Records",
     category = CATEGORY,
     inputs = [PORT_VALUE],
@@ -370,7 +370,7 @@ impl AsAgent for LanceDbAddRecordsAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Optimize",
     category = CATEGORY,
     inputs = [PORT_UNIT],
@@ -432,7 +432,7 @@ impl AsAgent for LanceDbOptimizeAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Query",
     category = CATEGORY,
     inputs = [PORT_VALUE],
@@ -531,7 +531,7 @@ impl AsAgent for LanceDbQueryAgent {
     }
 }
 
-#[mak_agent(
+#[modular_agent(
     title = "Vector Search",
     category = CATEGORY,
     inputs = [PORT_VALUE],

@@ -1,1 +1,1 @@
-# LanceDB Agents for Modular Agent Kit
+# LanceDB Agents for Modular Agent

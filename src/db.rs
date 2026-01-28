@@ -12,7 +12,7 @@ use arrow_schema::{DataType, Field, IntervalUnit, Schema, TimeUnit, UnionFields,
 use half::f16;
 use im::vector;
 use lancedb::{Connection, connect};
-use modular_agent_kit::{AgentError, AgentValue};
+use modular_agent_core::{AgentError, AgentValue};
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct DbSchema {
